@@ -58,4 +58,18 @@ Base URL: `/api/v1`
 | GET  | `/transactions/:id` | جزئیات معامله |
 | POST | `/transactions/:id/review` | ثبت نظر/امتیاز بعد از معامله |
 
+## Procurement Copilot (کوپایلوت تأمین — E13)
+| Method | Path | توضیح |
+|---|---|---|
+| GET   | `/procurement/boq-items?projectId=` | لیست اقلام BOQ یک پروژه |
+| POST  | `/procurement/boq-items` | ثبت قلم BOQ جدید (دسته، مقدار، واحد، تاریخ نیاز) |
+| GET   | `/procurement/suppliers?categoryId=` | لیست تأمین‌کنندگان (اختیاری: فیلتر بر اساس دسته) |
+| POST  | `/procurement/suppliers` | ثبت تأمین‌کننده‌ی جدید |
+| POST  | `/procurement/suppliers/:id/quotes` | ثبت قیمت/زمان تحویل پیشنهادی یک تأمین‌کننده برای یک دسته |
+| GET   | `/procurement/suppliers/compare?categoryId=` | مقایسه‌ی تأمین‌کنندگان یک دسته (قیمت، زمان تحویل، نرخ تحویل به‌موقع) |
+| POST  | `/procurement/orders` | ثبت سفارش خرید روی یک قلم BOQ |
+| PATCH | `/procurement/orders/:id/status` | به‌روزرسانی وضعیت تحویل سفارش (`DELIVERED`/`DELAYED`/`CANCELLED`) |
+| GET   | `/procurement/forecast?projectId=` | پیش‌بینی نیاز ۴ تا ۸ هفته‌ی آینده برای هر قلم BOQ (وضعیت OK/WATCH/CRITICAL) |
+| GET   | `/procurement/risk-report?projectId=` | گزارش ریسک تأمین: forecast + ریسک قیمت + بهترین تأمین‌کننده + توصیه‌ی متنی |
+
 > این مرجع پیش‌نویس فاز MVP است؛ ورودی/خروجی دقیق (JSON schema) هنگام پیاده‌سازی هر issue در `docs/issues/` تکمیل می‌شود.

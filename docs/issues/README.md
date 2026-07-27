@@ -17,6 +17,7 @@
 | E10 | پیام‌رسانی و اعتماد | [E10-messaging-trust.md](./E10-messaging-trust.md) | V1 |
 | E11 | Frontend UI/UX | [E11-frontend-ui.md](./E11-frontend-ui.md) | MVP + V1 |
 | E12 | زیرساخت و DevOps | [E12-infra-devops.md](./E12-infra-devops.md) | MVP |
+| E13 | کوپایلوت تأمین و زنجیره‌ی تأمین (Procurement Copilot) | [E13-procurement-copilot.md](./E13-procurement-copilot.md) | V2 |
 
 ## قرارداد لیبل‌ها
 `epic`, `mvp`, `v1`, `v2`, `backend`, `frontend`, `db`, `ai`, `bug`, `good-first-issue`

@@ -64,6 +64,9 @@ export default function DashboardPage() {
         <a href="/requests/new" className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50">
           درخواست جدید
         </a>
+        <a href="/procurement" className="rounded-lg border border-brand px-3 py-1.5 text-sm text-brand-dark hover:bg-brand/5">
+          کوپایلوت تأمین
+        </a>
         {user?.role === "ADMIN" && (
           <a href="/admin/listings" className="rounded-lg border border-brand px-3 py-1.5 text-sm text-brand-dark hover:bg-brand/5">
             پنل ادمین

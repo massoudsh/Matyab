@@ -20,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="flex items-center gap-4 text-sm text-gray-600">
               <a href="/listings">آگهی‌های عرضه</a>
               <a href="/requests">درخواست‌های تقاضا</a>
+              <a href="/procurement">کوپایلوت تأمین</a>
               <a href="/dashboard">داشبورد</a>
               <AuthNav />
             </nav>

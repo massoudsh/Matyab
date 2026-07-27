@@ -55,6 +55,13 @@ enum TransactionStatus {
   CANCELLED
 }
 
+enum ProcurementOrderStatus {
+  ORDERED
+  DELIVERED
+  DELAYED
+  CANCELLED
+}
+
 model User {
   id           String    @id @default(cuid())
   fullName     String
@@ -85,6 +92,7 @@ model Project {
 
   listings Listing[]
   requests MaterialRequest[]
+  boqItems BoqItem[]
 
   @@map("projects")
 }
@@ -96,9 +104,11 @@ model MaterialCategory {
   parent   MaterialCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
   children MaterialCategory[] @relation("CategoryTree")
 
-  listings      Listing[]
-  requests      MaterialRequest[]
-  priceHistory  PriceHistory[]
+  listings       Listing[]
+  requests       MaterialRequest[]
+  priceHistory   PriceHistory[]
+  supplierQuotes SupplierQuote[]
+  boqItems       BoqItem[]
 
   @@map("material_categories")
 }
@@ -230,4 +240,70 @@ model PriceHistory {
   recordedAt DateTime @default(now())
 
   @@map("price_history")
+}
+
+/**
+ * کوپایلوت تأمین (Procurement Copilot) — E13.
+ * Supplier/SupplierQuote/BoqItem/ProcurementOrder با هم پیش‌بینی نیاز، ریسک قیمت
+ * و مقایسه‌ی تأمین‌کننده را برای forecast/risk-report ممکن می‌کنند.
+ */
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  city      String?
+  createdAt DateTime @default(now())
+
+  quotes SupplierQuote[]
+  orders ProcurementOrder[]
+
+  @@map("suppliers")
+}
+
+model SupplierQuote {
+  id           String           @id @default(cuid())
+  supplierId   String
+  supplier     Supplier         @relation(fields: [supplierId], references: [id])
+  categoryId   String
+  category     MaterialCategory @relation(fields: [categoryId], references: [id])
+  unitPrice    Float
+  leadTimeDays Int
+  validUntil   DateTime?
+  createdAt    DateTime         @default(now())
+
+  @@map("supplier_quotes")
+}
+
+/** ردیف BOQ (فهرست مقادیر): مصالحی که یک پروژه تا تاریخ مشخصی به آن نیاز دارد. */
+model BoqItem {
+  id               String   @id @default(cuid())
+  projectId        String
+  project          Project  @relation(fields: [projectId], references: [id])
+  categoryId       String
+  category         MaterialCategory @relation(fields: [categoryId], references: [id])
+  requiredQuantity Float
+  unit             String
+  neededBy         DateTime
+  orderedQuantity  Float    @default(0)
+  createdAt        DateTime @default(now())
+
+  orders ProcurementOrder[]
+
+  @@map("boq_items")
+}
+
+model ProcurementOrder {
+  id                   String                 @id @default(cuid())
+  boqItemId            String
+  boqItem              BoqItem                @relation(fields: [boqItemId], references: [id])
+  supplierId           String
+  supplier             Supplier               @relation(fields: [supplierId], references: [id])
+  quantity             Float
+  unitPrice            Float
+  status               ProcurementOrderStatus @default(ORDERED)
+  orderedAt            DateTime               @default(now())
+  expectedDeliveryDate DateTime
+  actualDeliveryDate   DateTime?
+
+  @@map("procurement_orders")
 }

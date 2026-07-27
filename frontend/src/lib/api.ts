@@ -70,6 +70,74 @@ export interface ShippingEstimate {
   estimatedCost: number;
 }
 
+// ---------- کوپایلوت تأمین (Procurement Copilot) ----------
+
+export interface Supplier {
+  id: string;
+  name: string;
+  phone?: string | null;
+  city?: string | null;
+  quotes?: SupplierQuote[];
+}
+
+export interface SupplierQuote {
+  id: string;
+  supplierId: string;
+  categoryId: string;
+  category?: Category;
+  unitPrice: number;
+  leadTimeDays: number;
+  validUntil?: string | null;
+}
+
+export interface SupplierComparisonEntry {
+  quoteId: string;
+  supplierId: string;
+  supplierName: string;
+  city?: string | null;
+  unitPrice: number;
+  leadTimeDays: number;
+  onTimeRate: number | null;
+  avgDelayDays: number | null;
+  sampleSize: number;
+}
+
+export interface BoqItem {
+  id: string;
+  projectId: string;
+  categoryId: string;
+  category?: Category;
+  requiredQuantity: number;
+  unit: string;
+  neededBy: string;
+  orderedQuantity: number;
+}
+
+export type ProcurementStatus = "FULFILLED" | "OK" | "WATCH" | "CRITICAL";
+export type PriceRiskLevel = "LOW" | "MEDIUM" | "HIGH" | "UNKNOWN";
+
+export interface ProcurementForecastItem {
+  boqItemId: string;
+  categoryId: string;
+  categoryName: string;
+  unit: string;
+  requiredQuantity: number;
+  orderedQuantity: number;
+  remainingQuantity: number;
+  neededBy: string;
+  leadTimeDays: number;
+  mustOrderBy: string;
+  weeksUntilCritical: number;
+  status: ProcurementStatus;
+}
+
+export interface ProcurementRiskReportItem extends ProcurementForecastItem {
+  priceRisk: { level: PriceRiskLevel; changePct: number | null; sampleSize: number };
+  bestSupplier: SupplierComparisonEntry | null;
+  supplierCount: number;
+  recommendation: string;
+}
+
 async function request<T>(path: string, options?: RequestInit & { auth?: boolean }): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -144,4 +212,24 @@ export const api = {
   // shipping
   estimateShipping: (fromProjectId: string, toProjectId: string) =>
     request<ShippingEstimate>(`/shipping/estimate${toQuery({ fromProjectId, toProjectId })}`),
+
+  // procurement copilot
+  getBoqItems: (projectId: string) =>
+    request<BoqItem[]>(`/procurement/boq-items${toQuery({ projectId })}`, { auth: true }),
+  createBoqItem: (input: { projectId: string; categoryId: string; requiredQuantity: number; unit: string; neededBy: string }) =>
+    request<BoqItem>("/procurement/boq-items", { method: "POST", body: JSON.stringify(input), auth: true }),
+  getProcurementForecast: (projectId: string) =>
+    request<ProcurementForecastItem[]>(`/procurement/forecast${toQuery({ projectId })}`, { auth: true }),
+  getProcurementRiskReport: (projectId: string) =>
+    request<ProcurementRiskReportItem[]>(`/procurement/risk-report${toQuery({ projectId })}`, { auth: true }),
+  getSuppliers: (categoryId?: string) =>
+    request<Supplier[]>(`/procurement/suppliers${toQuery({ categoryId })}`),
+  createSupplier: (input: { name: string; phone?: string; city?: string }) =>
+    request<Supplier>("/procurement/suppliers", { method: "POST", body: JSON.stringify(input), auth: true }),
+  createSupplierQuote: (
+    supplierId: string,
+    input: { categoryId: string; unitPrice: number; leadTimeDays: number; validUntil?: string }
+  ) => request<SupplierQuote>(`/procurement/suppliers/${supplierId}/quotes`, { method: "POST", body: JSON.stringify(input), auth: true }),
+  compareSuppliers: (categoryId: string) =>
+    request<SupplierComparisonEntry[]>(`/procurement/suppliers/compare${toQuery({ categoryId })}`),
 };

@@ -11,6 +11,7 @@ CREATE TYPE match_status AS ENUM ('SUGGESTED', 'ACCEPTED', 'REJECTED');
 CREATE TYPE quality_grade AS ENUM ('A', 'B', 'C');
 CREATE TYPE assessment_source AS ENUM ('AI', 'MANUAL');
 CREATE TYPE transaction_status AS ENUM ('PENDING', 'COMPLETED', 'CANCELLED');
+CREATE TYPE procurement_order_status AS ENUM ('ORDERED', 'DELIVERED', 'DELAYED', 'CANCELLED');
 
 CREATE TABLE users (
     id             TEXT PRIMARY KEY,
@@ -131,6 +132,53 @@ CREATE TABLE price_history (
     recorded_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- کوپایلوت تأمین (Procurement Copilot) — E13
+CREATE TABLE suppliers (
+    id         TEXT PRIMARY KEY,
+    name       TEXT NOT NULL,
+    phone      TEXT,
+    city       TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE supplier_quotes (
+    id             TEXT PRIMARY KEY,
+    supplier_id    TEXT NOT NULL REFERENCES suppliers(id),
+    category_id    TEXT NOT NULL REFERENCES material_categories(id),
+    unit_price     REAL NOT NULL,
+    lead_time_days INTEGER NOT NULL,
+    valid_until    TIMESTAMPTZ,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ردیف BOQ: مصالحی که یک پروژه تا تاریخ مشخصی به آن نیاز دارد
+CREATE TABLE boq_items (
+    id                TEXT PRIMARY KEY,
+    project_id        TEXT NOT NULL REFERENCES projects(id),
+    category_id       TEXT NOT NULL REFERENCES material_categories(id),
+    required_quantity REAL NOT NULL,
+    unit              TEXT NOT NULL,
+    needed_by         TIMESTAMPTZ NOT NULL,
+    ordered_quantity  REAL NOT NULL DEFAULT 0,
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE procurement_orders (
+    id                     TEXT PRIMARY KEY,
+    boq_item_id            TEXT NOT NULL REFERENCES boq_items(id),
+    supplier_id            TEXT NOT NULL REFERENCES suppliers(id),
+    quantity               REAL NOT NULL,
+    unit_price             REAL NOT NULL,
+    status                 procurement_order_status NOT NULL DEFAULT 'ORDERED',
+    ordered_at             TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expected_delivery_date TIMESTAMPTZ NOT NULL,
+    actual_delivery_date   TIMESTAMPTZ
+);
+
 CREATE INDEX idx_listings_category_status ON listings(category_id, status);
 CREATE INDEX idx_requests_category_status ON material_requests(category_id, status);
 CREATE INDEX idx_price_history_category_region ON price_history(category_id, region);
+CREATE INDEX idx_supplier_quotes_category ON supplier_quotes(category_id);
+CREATE INDEX idx_boq_items_project ON boq_items(project_id);
+CREATE INDEX idx_procurement_orders_boq_item ON procurement_orders(boq_item_id);
+CREATE INDEX idx_procurement_orders_supplier ON procurement_orders(supplier_id);

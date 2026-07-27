@@ -9,6 +9,7 @@ import { pricingRouter } from "../modules/pricing/pricing.routes";
 import { qualityRouter } from "../modules/quality/quality.routes";
 import { shippingRouter } from "../modules/shipping/shipping.routes";
 import { transactionsRouter } from "../modules/transactions/transactions.routes";
+import { procurementRouter } from "../modules/procurement/procurement.routes";
 
 export const apiRouter = Router();
 
@@ -22,3 +23,4 @@ apiRouter.use("/requests", requestsRouter);
 apiRouter.use("/matches", matchingRouter);
 apiRouter.use("/shipping", shippingRouter);
 apiRouter.use("/transactions", transactionsRouter);
+apiRouter.use("/procurement", procurementRouter);
