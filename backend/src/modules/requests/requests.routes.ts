@@ -6,7 +6,10 @@ export const requestsRouter = Router();
 
 requestsRouter.get("/", async (req, res, next) => {
   try {
-    const requests = await findRequests(req.query.categoryId as string | undefined);
+    const requests = await findRequests(
+      req.query.categoryId as string | undefined,
+      req.query.projectId as string | undefined
+    );
     res.json(requests);
   } catch (err) {
     next(err);

@@ -3,6 +3,7 @@ import { prisma } from "../../db/prisma";
 interface ListingFilters {
   categoryId?: string;
   city?: string;
+  projectId?: string;
   minPrice?: number;
   maxPrice?: number;
 }
@@ -12,6 +13,7 @@ export async function findListings(filters: ListingFilters) {
     where: {
       status: "ACTIVE",
       categoryId: filters.categoryId,
+      projectId: filters.projectId,
       askingPrice: {
         gte: filters.minPrice,
         lte: filters.maxPrice,
@@ -21,6 +23,19 @@ export async function findListings(filters: ListingFilters) {
     include: { category: true, qualityAssessment: true, priceSuggestion: true },
     orderBy: { createdAt: "desc" },
   });
+}
+
+/** پنل ادمین (MVP): فهرست آگهی‌های در انتظار تأیید. */
+export async function findPendingListings() {
+  return prisma.listing.findMany({
+    where: { status: "PENDING_REVIEW" },
+    include: { category: true, project: true },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
+export async function updateListingStatus(id: string, status: "ACTIVE" | "REJECTED") {
+  return prisma.listing.update({ where: { id }, data: { status } });
 }
 
 export async function getListingById(id: string) {

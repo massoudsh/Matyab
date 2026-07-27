@@ -2,7 +2,10 @@ import { Listing } from "@/lib/api";
 
 export function MaterialCard({ listing }: { listing: Listing }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm transition hover:shadow-md">
+    <a
+      href={`/listings/${listing.id}`}
+      className="block overflow-hidden rounded-xl border border-gray-200 shadow-sm transition hover:shadow-md"
+    >
       <div className="aspect-video bg-gray-100">
         {listing.photos[0] && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -17,6 +20,6 @@ export function MaterialCard({ listing }: { listing: Listing }) {
           {listing.askingPrice.toLocaleString("fa-IR")} تومان
         </p>
       </div>
-    </div>
+    </a>
   );
 }

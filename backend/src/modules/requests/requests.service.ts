@@ -13,9 +13,9 @@ export async function createRequest(input: CreateRequestInput) {
   return prisma.materialRequest.create({ data: { ...input, status: "ACTIVE" } });
 }
 
-export async function findRequests(categoryId?: string) {
+export async function findRequests(categoryId?: string, projectId?: string) {
   return prisma.materialRequest.findMany({
-    where: { status: "ACTIVE", categoryId },
+    where: { status: "ACTIVE", categoryId, projectId },
     include: { category: true, project: true },
     orderBy: { createdAt: "desc" },
   });
