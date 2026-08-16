@@ -18,6 +18,11 @@
 | E11 | Frontend UI/UX | [E11-frontend-ui.md](./E11-frontend-ui.md) | MVP + V1 |
 | E12 | زیرساخت و DevOps | [E12-infra-devops.md](./E12-infra-devops.md) | MVP |
 | E13 | کوپایلوت تأمین و زنجیره‌ی تأمین (Procurement Copilot) | [E13-procurement-copilot.md](./E13-procurement-copilot.md) | V2 |
+| E14 | اعلان درون‌اپ (Notifications) | [E14-notifications.md](./E14-notifications.md) | V1 |
+| E15 | توضیح‌پذیری تصمیم AI (Explainability Dashboard) | [E15-explainability-dashboard.md](./E15-explainability-dashboard.md) | V1 |
+| E16 | موتور matching real-time و پرداخت امن (Escrow) | [E16-realtime-matching-escrow.md](./E16-realtime-matching-escrow.md) | V2 |
+| E17 | اپلیکیشن موبایل/PWA و گسترش جغرافیایی | [E17-mobile-pwa-expansion.md](./E17-mobile-pwa-expansion.md) | V2 |
+| E18 | اشتراک B2B، API عمومی و شاخص قیمت | [E18-b2b-api-price-index.md](./E18-b2b-api-price-index.md) | V2 |
 
 ## قرارداد لیبل‌ها
 `epic`, `mvp`, `v1`, `v2`, `backend`, `frontend`, `db`, `ai`, `bug`, `good-first-issue`

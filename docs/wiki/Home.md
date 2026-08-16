@@ -9,7 +9,8 @@
 - [مرجع API](./API-Reference.md)
 - [موتور هوش مصنوعی: کیفیت، قیمت، مچینگ](./AI-Pricing-Quality-Matching.md)
 - [مدل کسب‌وکار](./Business-Model.md)
+- [قالب ویکی دانش پروژه (Vault Template)](./Knowledge-Wiki-Template.md)
 
 ## لینک‌های مرتبط
-- [Roadmap](../roadmap.md)
-- [Issues / بک‌لاگ](../issues/README.md)
+- [Roadmap](https://github.com/massoudsh/Matyab/blob/main/docs/roadmap.md)
+- [Issues / بک‌لاگ](https://github.com/massoudsh/Matyab/tree/main/docs/issues)

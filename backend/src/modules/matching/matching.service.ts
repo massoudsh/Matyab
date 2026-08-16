@@ -1,10 +1,12 @@
 import { prisma } from "../../db/prisma";
 import { haversineDistanceKm } from "../shipping/shipping.service";
+import { createNotification } from "../notifications/notifications.service";
 
 /**
  * الگوریتم rule-based مچینگ (فاز MVP — ISSUE-502).
  * برای یک MaterialRequest جدید، Listing های هم‌دسته را پیدا می‌کند،
  * بر اساس هم‌پوشانی مقدار و فاصله امتیاز می‌دهد و رکورد Match می‌سازد.
+ * روی هر match جدید، طبق E14 یک اعلان MATCH_FOUND برای مالک پروژه‌ی درخواست ساخته می‌شود.
  */
 export async function generateMatchesForRequest(requestId: string) {
   const request = await prisma.materialRequest.findUniqueOrThrow({
@@ -44,6 +46,17 @@ export async function generateMatchesForRequest(requestId: string) {
     }
 
     created.push(match);
+  }
+
+  if (created.length > 0) {
+    await createNotification({
+      userId: request.project.ownerId,
+      type: "MATCH_FOUND",
+      title: `${created.length} مصالح مشابه با درخواست شما پیدا شد`,
+      body: `برای درخواست شما در دسته‌ی این پروژه، ${created.length} آگهی عرضه‌ی مرتبط پیدا شد.`,
+      refType: "material_request",
+      refId: request.id,
+    });
   }
 
   return created;

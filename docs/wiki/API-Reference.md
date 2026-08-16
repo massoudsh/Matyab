@@ -72,4 +72,13 @@ Base URL: `/api/v1`
 | GET   | `/procurement/forecast?projectId=` | پیش‌بینی نیاز ۴ تا ۸ هفته‌ی آینده برای هر قلم BOQ (وضعیت OK/WATCH/CRITICAL) |
 | GET   | `/procurement/risk-report?projectId=` | گزارش ریسک تأمین: forecast + ریسک قیمت + بهترین تأمین‌کننده + توصیه‌ی متنی |
 
+## Notifications (اعلان درون‌اپ — E14)
+| Method | Path | توضیح |
+|---|---|---|
+| GET   | `/notifications` | لیست اعلان‌های کاربر جاری (جدیدترین اول) |
+| GET   | `/notifications?unreadOnly=true` | فقط اعلان‌های خوانده‌نشده |
+| GET   | `/notifications/unread-count` | تعداد اعلان‌های خوانده‌نشده (`{ count }`) — برای بج روی زنگوله |
+| PATCH | `/notifications/:id/read` | علامت‌گذاری یک اعلان به‌عنوان خوانده‌شده |
+| PATCH | `/notifications/read-all` | علامت‌گذاری همه‌ی اعلان‌های کاربر به‌عنوان خوانده‌شده |
+
 > این مرجع پیش‌نویس فاز MVP است؛ ورودی/خروجی دقیق (JSON schema) هنگام پیاده‌سازی هر issue در `docs/issues/` تکمیل می‌شود.

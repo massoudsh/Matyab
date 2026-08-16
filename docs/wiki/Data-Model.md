@@ -64,6 +64,10 @@
 سفارش خرید ثبت‌شده روی یک BoqItem از یک Supplier؛ تاریخچه‌ی تحویل آن ورودی محاسبه‌ی قابلیت‌اطمینان تأمین‌کننده است.
 فیلدها: قلم BOQ، تأمین‌کننده، مقدار، قیمت واحد، وضعیت (`ORDERED`/`DELIVERED`/`DELAYED`/`CANCELLED`)، تاریخ تحویل مورد انتظار/واقعی.
 
+### Notification (اعلان درون‌اپ — E14)
+اعلانی که برای مالک یک پروژه ساخته می‌شود؛ دو نوع فعلی: `MATCH_FOUND` (وقتی مچینگ برای یک MaterialRequest نتیجه‌ی جدید پیدا کند) و `PROCUREMENT_CRITICAL` (وقتی یک BoqItem در کوپایلوت تأمین به وضعیت CRITICAL برسد).
+فیلدها: کاربر، نوع، عنوان، متن، `refType`/`refId` (اشاره به رکورد مرتبط، مثلاً `material_request` یا `boq_item`)، وضعیت خوانده‌شده.
+
 ## رابطه‌ی خلاصه
 ```
 User 1─N Project 1─N Listing        Listing 1─1 QualityAssessment
@@ -78,4 +82,6 @@ MaterialCategory 1─N PriceHistory
 Project 1─N BoqItem N─1 MaterialCategory
 MaterialCategory 1─N SupplierQuote N─1 Supplier
 BoqItem 1─N ProcurementOrder N─1 Supplier
+
+User 1─N Notification
 ```

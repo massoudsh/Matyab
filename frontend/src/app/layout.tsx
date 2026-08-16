@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "../styles/globals.css";
 import { AuthNav } from "@/components/AuthNav";
+import { NotificationBell } from "@/components/NotificationBell";
 
 export const metadata: Metadata = {
   title: "متریاب — بازار هوشمند مصالح ساختمانی",
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <a href="/requests">درخواست‌های تقاضا</a>
               <a href="/procurement">کوپایلوت تأمین</a>
               <a href="/dashboard">داشبورد</a>
+              <NotificationBell />
               <AuthNav />
             </nav>
           </div>

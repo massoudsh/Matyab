@@ -138,6 +138,22 @@ export interface ProcurementRiskReportItem extends ProcurementForecastItem {
   recommendation: string;
 }
 
+// ---------- اعلان درون‌اپ (Notifications) — E14 ----------
+
+export type NotificationType = "MATCH_FOUND" | "PROCUREMENT_CRITICAL";
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body?: string | null;
+  refType?: string | null;
+  refId?: string | null;
+  isRead: boolean;
+  createdAt: string;
+}
+
 async function request<T>(path: string, options?: RequestInit & { auth?: boolean }): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -232,4 +248,12 @@ export const api = {
   ) => request<SupplierQuote>(`/procurement/suppliers/${supplierId}/quotes`, { method: "POST", body: JSON.stringify(input), auth: true }),
   compareSuppliers: (categoryId: string) =>
     request<SupplierComparisonEntry[]>(`/procurement/suppliers/compare${toQuery({ categoryId })}`),
+
+  // اعلان‌ها
+  getNotifications: (unreadOnly?: boolean) =>
+    request<Notification[]>(`/notifications${toQuery({ unreadOnly: unreadOnly ? "true" : undefined })}`, { auth: true }),
+  getUnreadNotificationCount: () => request<{ count: number }>("/notifications/unread-count", { auth: true }),
+  markNotificationRead: (id: string) =>
+    request<void>(`/notifications/${id}/read`, { method: "PATCH", auth: true }),
+  markAllNotificationsRead: () => request<void>("/notifications/read-all", { method: "PATCH", auth: true }),
 };

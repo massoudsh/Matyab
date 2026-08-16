@@ -12,6 +12,7 @@ CREATE TYPE quality_grade AS ENUM ('A', 'B', 'C');
 CREATE TYPE assessment_source AS ENUM ('AI', 'MANUAL');
 CREATE TYPE transaction_status AS ENUM ('PENDING', 'COMPLETED', 'CANCELLED');
 CREATE TYPE procurement_order_status AS ENUM ('ORDERED', 'DELIVERED', 'DELAYED', 'CANCELLED');
+CREATE TYPE notification_type AS ENUM ('MATCH_FOUND', 'PROCUREMENT_CRITICAL');
 
 CREATE TABLE users (
     id             TEXT PRIMARY KEY,
@@ -175,6 +176,19 @@ CREATE TABLE procurement_orders (
     actual_delivery_date   TIMESTAMPTZ
 );
 
+-- اعلان درون‌اپ (Notification) — E14: MATCH_FOUND هنگام مچینگ، PROCUREMENT_CRITICAL هنگام رسیدن یک قلم BOQ به وضعیت بحرانی
+CREATE TABLE notifications (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id),
+    type       notification_type NOT NULL,
+    title      TEXT NOT NULL,
+    body       TEXT,
+    ref_type   TEXT,
+    ref_id     TEXT,
+    is_read    BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE INDEX idx_listings_category_status ON listings(category_id, status);
 CREATE INDEX idx_requests_category_status ON material_requests(category_id, status);
 CREATE INDEX idx_price_history_category_region ON price_history(category_id, region);
@@ -182,3 +196,4 @@ CREATE INDEX idx_supplier_quotes_category ON supplier_quotes(category_id);
 CREATE INDEX idx_boq_items_project ON boq_items(project_id);
 CREATE INDEX idx_procurement_orders_boq_item ON procurement_orders(boq_item_id);
 CREATE INDEX idx_procurement_orders_supplier ON procurement_orders(supplier_id);
+CREATE INDEX idx_notifications_user_unread ON notifications(user_id, is_read);

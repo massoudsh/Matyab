@@ -1,4 +1,5 @@
 import { prisma } from "../../db/prisma";
+import { createNotificationOnce } from "../notifications/notifications.service";
 
 /**
  * سرویس کوپایلوت تأمین (Procurement Copilot) — E13.
@@ -263,6 +264,19 @@ export async function procurementRiskReport(projectId: string) {
 
       if (suppliers.length > 1) {
         recommendation += " چندمنبعی (چند تأمین‌کننده) برای این قلم پیشنهاد می‌شود.";
+      }
+
+      // E14: اعلان PROCUREMENT_CRITICAL برای مالک پروژه — با dedupe روی refId تا هر بار
+      // که این گزارش دوباره محاسبه می‌شود اعلان تکراری ساخته نشود.
+      if (f.status === "CRITICAL") {
+        await createNotificationOnce({
+          userId: project.ownerId,
+          type: "PROCUREMENT_CRITICAL",
+          title: `قلم «${f.categoryName}» در وضعیت بحرانی تأمین است`,
+          body: `با زمان تحویل حدود ${f.leadTimeDays} روز، این قلم باید فوراً سفارش داده شود.`,
+          refType: "boq_item",
+          refId: f.boqItemId,
+        });
       }
 
       return {

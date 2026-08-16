@@ -1,4 +1,5 @@
 import { prisma } from "../../db/prisma";
+import { generateMatchesForRequest } from "../matching/matching.service";
 
 interface CreateRequestInput {
   projectId: string;
@@ -9,8 +10,15 @@ interface CreateRequestInput {
 }
 
 export async function createRequest(input: CreateRequestInput) {
-  // TODO(ISSUE-502): بعد از ساخت درخواست، الگوریتم مچینگ باید trigger شود.
-  return prisma.materialRequest.create({ data: { ...input, status: "ACTIVE" } });
+  const request = await prisma.materialRequest.create({ data: { ...input, status: "ACTIVE" } });
+
+  // ISSUE-502: مچینگ بلافاصله بعد از ثبت درخواست trigger می‌شود (نه cron).
+  // اگر مچینگ خطا بدهد نباید ثبت درخواست را fail کند — فقط لاگ می‌شود.
+  generateMatchesForRequest(request.id).catch((err) => {
+    console.error(`generateMatchesForRequest failed for request ${request.id}:`, err);
+  });
+
+  return request;
 }
 
 export async function findRequests(categoryId?: string, projectId?: string) {
