@@ -1,6 +1,7 @@
 import { prisma } from "../../db/prisma";
 import { badRequest, forbidden, notFound } from "../../middlewares/http-error";
 import { assertProjectOwner } from "../projects/projects.service";
+import { generateMatchesForListing } from "../matching/matching.service";
 
 interface ListingFilters {
   categoryId?: string;
@@ -47,10 +48,12 @@ export async function updateListingStatus(
     throw badRequest("فقط آگهی در انتظار بررسی قابل تأیید یا رد است");
   }
 
-  return prisma.listing.update({
+  const updated = await prisma.listing.update({
     where: { id },
     data: { status, moderationReason: moderationReason ?? null, moderatedAt: new Date() },
   });
+  if (status === "ACTIVE") await generateMatchesForListing(updated.id);
+  return updated;
 }
 
 export async function getListingById(id: string, userId: string, userRole?: string) {

@@ -200,6 +200,7 @@ model Match {
   shippingEstimate ShippingEstimate?
   transaction      Transaction?
 
+  @@unique([listingId, requestId])
   @@map("matches")
 }
 

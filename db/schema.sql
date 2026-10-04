@@ -96,7 +96,8 @@ CREATE TABLE matches (
     match_score REAL NOT NULL,
     reason      TEXT,
     status      match_status NOT NULL DEFAULT 'SUGGESTED',
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (listing_id, request_id)
 );
 
 CREATE TABLE shipping_estimates (

@@ -1,19 +1,19 @@
 import { Router } from "express";
-import { prisma } from "../../db/prisma";
-import { requireAuth } from "../../middlewares/auth.middleware";
+import { AuthenticatedRequest, requireAuth } from "../../middlewares/auth.middleware";
+import { findMatchesForUser, updateMatchStatus } from "./matching.service";
 
 export const matchingRouter = Router();
 
-matchingRouter.get("/", async (req, res, next) => {
+matchingRouter.get("/", requireAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
-    const { requestId, listingId } = req.query;
-    const matches = await prisma.match.findMany({
-      where: {
-        requestId: requestId as string | undefined,
-        listingId: listingId as string | undefined,
-      },
-      include: { listing: true, request: true, shippingEstimate: true },
-      orderBy: { matchScore: "desc" },
+    const { requestId, listingId, status } = req.query;
+    if (status && !["SUGGESTED", "ACCEPTED", "REJECTED"].includes(status as string)) {
+      return res.status(400).json({ error: "وضعیت مچ نامعتبر است" });
+    }
+    const matches = await findMatchesForUser(req.userId!, req.userRole, {
+      requestId: requestId as string | undefined,
+      listingId: listingId as string | undefined,
+      status: status as "SUGGESTED" | "ACCEPTED" | "REJECTED" | undefined,
     });
     res.json(matches);
   } catch (err) {
@@ -21,25 +21,17 @@ matchingRouter.get("/", async (req, res, next) => {
   }
 });
 
-matchingRouter.post("/:id/accept", requireAuth, async (req, res, next) => {
+matchingRouter.post("/:id/accept", requireAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
-    const match = await prisma.match.update({
-      where: { id: req.params.id },
-      data: { status: "ACCEPTED" },
-    });
-    res.json(match);
+    res.json(await updateMatchStatus(req.params.id, req.userId!, req.userRole, "ACCEPTED"));
   } catch (err) {
     next(err);
   }
 });
 
-matchingRouter.post("/:id/reject", requireAuth, async (req, res, next) => {
+matchingRouter.post("/:id/reject", requireAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
-    const match = await prisma.match.update({
-      where: { id: req.params.id },
-      data: { status: "REJECTED" },
-    });
-    res.json(match);
+    res.json(await updateMatchStatus(req.params.id, req.userId!, req.userRole, "REJECTED"));
   } catch (err) {
     next(err);
   }
