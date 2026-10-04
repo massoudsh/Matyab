@@ -103,7 +103,7 @@ export default function NewRequestPage() {
             <label className="mb-1 block text-sm text-gray-600">مقدار مورد نیاز</label>
             <input
               type="number"
-              min={0}
+              min={0.01}
               step="any"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
@@ -115,7 +115,7 @@ export default function NewRequestPage() {
             <label className="mb-1 block text-sm text-gray-600">بودجه (تومان، اختیاری)</label>
             <input
               type="number"
-              min={0}
+              min={0.01}
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2"

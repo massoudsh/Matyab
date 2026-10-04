@@ -76,7 +76,19 @@ interface CreateListingInput {
   askingPrice: number;
 }
 
+type UpdateListingInput = Partial<Pick<CreateListingInput, "quantity" | "unit" | "photos" | "description" | "askingPrice">>;
+
 export async function createListing(input: CreateListingInput, userId: string, userRole?: string) {
   await assertProjectOwner(input.projectId, userId, userRole);
+  const category = await prisma.materialCategory.findUnique({ where: { id: input.categoryId } });
+  if (!category) throw badRequest("دسته مصالح نامعتبر است");
   return prisma.listing.create({ data: { ...input, status: "PENDING_REVIEW" } });
+}
+
+export async function updateListing(id: string, input: UpdateListingInput, userId: string, userRole?: string) {
+  const listing = await prisma.listing.findUnique({ where: { id }, include: { project: true } });
+  if (!listing) throw notFound("آگهی");
+  if (userRole !== "ADMIN" && listing.project.ownerId !== userId) throw forbidden();
+  if (listing.status !== "PENDING_REVIEW") throw badRequest("فقط آگهی در انتظار بررسی قابل ویرایش است");
+  return prisma.listing.update({ where: { id }, data: input });
 }

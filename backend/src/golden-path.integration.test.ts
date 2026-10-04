@@ -39,7 +39,10 @@ function createTestDatabase() {
       findUnique: async ({ where }: any) => projectFor(where.id) ?? null,
       findMany: async ({ where }: any) => projects.filter((project) => project.ownerId === where.ownerId),
     },
-    materialCategory: { findMany: async () => categories },
+    materialCategory: {
+      findMany: async () => categories,
+      findUnique: async ({ where }: any) => categories.find((category) => category.id === where.id) ?? null,
+    },
     listing: {
       create: async ({ data }: any) => {
         const listing = { id: id("listing"), ...data, createdAt: new Date() };
@@ -164,13 +167,18 @@ test("golden MVP API flow creates a match, notification, and transaction", async
     const contractorProject = await api.post("/api/v1/projects").set("Authorization", `Bearer ${contractor.body.token}`).send({ name: "پروژه خریدار", city: "تهران", lat: 35.7, lng: 51.4 }).expect(201);
     const categories = await api.get("/api/v1/categories").expect(200);
     assert.equal(categories.body[0].id, "steel");
+    await api.get("/api/v1/listings?minPrice=200&maxPrice=100").expect(400).expect({ error: "حداقل قیمت نمی‌تواند بیشتر از حداکثر قیمت باشد" });
+    await api.post("/api/v1/requests").set("Authorization", `Bearer ${contractor.body.token}`).send({ projectId: contractorProject.body.id, categoryId: "steel", quantity: 0 }).expect(400).expect({ error: "مقدار باید بیشتر از صفر باشد" });
+    await api.post("/api/v1/requests").set("Authorization", `Bearer ${contractor.body.token}`).send({ projectId: contractorProject.body.id, categoryId: "unknown", quantity: 100 }).expect(400).expect({ error: "دسته مصالح نامعتبر است" });
 
     const materialRequest = await api.post("/api/v1/requests").set("Authorization", `Bearer ${contractor.body.token}`).send({ projectId: contractorProject.body.id, categoryId: "steel", quantity: 100 }).expect(201);
     await api.get(`/api/v1/requests/${materialRequest.body.id}`).set("Authorization", `Bearer ${contractor.body.token}`).expect(200);
 
     const supplier = await api.post("/api/v1/auth/register").send({ fullName: "فروشنده", phone: "09120000002", password: "secret", role: "SUPPLIER" }).expect(201);
     const supplierProject = await api.post("/api/v1/projects").set("Authorization", `Bearer ${supplier.body.token}`).send({ name: "پروژه فروشنده", city: "تهران", lat: 35.7, lng: 51.4 }).expect(201);
+    await api.post("/api/v1/listings").set("Authorization", `Bearer ${supplier.body.token}`).send({ projectId: supplierProject.body.id, categoryId: "steel", quantity: 50, unit: "kg", photos: ["ftp://invalid"], askingPrice: 100000 }).expect(400).expect({ error: "نشانی عکس باید با http یا https شروع شود" });
     const listing = await api.post("/api/v1/listings").set("Authorization", `Bearer ${supplier.body.token}`).send({ projectId: supplierProject.body.id, categoryId: "steel", quantity: 50, unit: "kg", photos: [], askingPrice: 100000 }).expect(201);
+    await api.patch(`/api/v1/listings/${listing.body.id}`).set("Authorization", `Bearer ${contractor.body.token}`).send({ quantity: 40 }).expect(403);
 
     await api.patch(`/api/v1/listings/${listing.body.id}/status`).set("Authorization", `Bearer ${adminToken}`).send({ status: "ACTIVE" }).expect(200);
     const matches = await api.get("/api/v1/matches?status=SUGGESTED").set("Authorization", `Bearer ${contractor.body.token}`).expect(200);

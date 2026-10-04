@@ -108,7 +108,7 @@ export default function NewListingPage() {
               <label className="mb-1 block text-sm text-gray-600">مقدار</label>
               <input
                 type="number"
-                min={0}
+                min={0.01}
                 step="any"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
@@ -131,7 +131,7 @@ export default function NewListingPage() {
             <label className="mb-1 block text-sm text-gray-600">قیمت پیشنهادی (تومان)</label>
             <input
               type="number"
-              min={0}
+              min={0.01}
               value={askingPrice}
               onChange={(e) => setAskingPrice(e.target.value)}
               required
@@ -141,6 +141,7 @@ export default function NewListingPage() {
           <div>
             <label className="mb-1 block text-sm text-gray-600">آدرس عکس (اختیاری)</label>
             <input
+              type="url"
               value={photoUrl}
               onChange={(e) => setPhotoUrl(e.target.value)}
               placeholder="https://..."
