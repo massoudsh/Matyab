@@ -248,11 +248,7 @@ model PriceHistory {
   @@map("price_history")
 }
 
-/**
- * کوپایلوت تأمین (Procurement Copilot) — E13.
- * Supplier/SupplierQuote/BoqItem/ProcurementOrder با هم پیش‌بینی نیاز، ریسک قیمت
- * و مقایسه‌ی تأمین‌کننده را برای forecast/risk-report ممکن می‌کنند.
- */
+// کوپایلوت تأمین (Procurement Copilot) — E13.
 model Supplier {
   id        String   @id @default(cuid())
   name      String
@@ -280,7 +276,7 @@ model SupplierQuote {
   @@map("supplier_quotes")
 }
 
-/** ردیف BOQ (فهرست مقادیر): مصالحی که یک پروژه تا تاریخ مشخصی به آن نیاز دارد. */
+// ردیف BOQ (فهرست مقادیر): مصالحی که یک پروژه تا تاریخ مشخصی به آن نیاز دارد.
 model BoqItem {
   id               String   @id @default(cuid())
   projectId        String
@@ -314,13 +310,7 @@ model ProcurementOrder {
   @@map("procurement_orders")
 }
 
-/**
- * اعلان درون‌اپ (Notification) — E14.
- * وقتی مچینگ برای یک MaterialRequest نتیجه‌ی جدید پیدا کند (MATCH_FOUND) یا یک
- * BoqItem در کوپایلوت تأمین به وضعیت CRITICAL برسد (PROCUREMENT_CRITICAL)، برای
- * مالک پروژه‌ی مربوطه یک رکورد اینجا ساخته می‌شود. refType/refId اشاره به رکورد
- * مرتبط دارد (مثلاً refType="match" یا refType="boq_item").
- */
+// اعلان درون‌اپ برای مچ‌ها و قلم‌های بحرانی BOQ.
 model Notification {
   id        String           @id @default(cuid())
   userId    String

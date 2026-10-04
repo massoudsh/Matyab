@@ -2,8 +2,6 @@
 -- این فایل فقط برای مستندسازی/خوانایی است.
 -- منبع اصلی truth: backend/prisma/schema.prisma (migration واقعی از همان‌جا تولید می‌شود)
 
-CREATE EXTENSION IF NOT EXISTS vector; -- pgvector برای مچینگ معنایی
-
 CREATE TYPE user_role AS ENUM ('CONTRACTOR', 'SUPPLIER', 'ADMIN');
 CREATE TYPE listing_status AS ENUM ('PENDING_REVIEW', 'ACTIVE', 'MATCHED', 'SOLD', 'EXPIRED', 'REJECTED');
 CREATE TYPE request_status AS ENUM ('ACTIVE', 'MATCHED', 'FULFILLED', 'EXPIRED');
@@ -54,7 +52,6 @@ CREATE TABLE listings (
     description   TEXT,
     asking_price  REAL NOT NULL,
     status        listing_status NOT NULL DEFAULT 'PENDING_REVIEW',
-    description_embedding vector(1536), -- برای مچینگ معنایی فاز V1
     created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );

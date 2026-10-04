@@ -7,9 +7,11 @@ INSERT INTO material_categories (id, name, parent_id) VALUES
     ('cat_door_win', 'درب و پنجره',       NULL),
     ('cat_pipe',     'لوله و اتصالات',    NULL),
     ('cat_insulation','عایق',             NULL),
-    ('cat_wood',     'چوب',               NULL);
+    ('cat_wood',     'چوب',               NULL)
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, parent_id = EXCLUDED.parent_id;
 
 INSERT INTO material_categories (id, name, parent_id) VALUES
     ('cat_rebar_8',  'میلگرد ۸ میل',  'cat_rebar'),
     ('cat_rebar_12', 'میلگرد ۱۲ میل', 'cat_rebar'),
-    ('cat_block',    'بلوک سیمانی',   'cat_cement');
+    ('cat_block',    'بلوک سیمانی',   'cat_cement')
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, parent_id = EXCLUDED.parent_id;
