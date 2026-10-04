@@ -8,6 +8,7 @@ export default function AdminPendingListingsPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   async function load() {
     const pending = await api.getPendingListings();
@@ -25,11 +26,17 @@ export default function AdminPendingListingsPage() {
   }, []);
 
   async function decide(id: string, status: "ACTIVE" | "REJECTED") {
+    const moderationReason = status === "REJECTED" ? window.prompt("دلیل رد آگهی را وارد کنید:")?.trim() : undefined;
+    if (status === "REJECTED" && !moderationReason) return;
+    setError(null);
+    setUpdatingId(id);
     try {
-      await api.setListingStatus(id, status);
+      await api.setListingStatus(id, status, moderationReason);
       setListings((prev) => prev.filter((l) => l.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : "خطا در ثبت تصمیم");
+    } finally {
+      setUpdatingId(null);
     }
   }
 
@@ -54,14 +61,16 @@ export default function AdminPendingListingsPage() {
               </div>
               <div className="flex gap-2">
                 <button
+                  disabled={updatingId === listing.id}
                   onClick={() => decide(listing.id, "ACTIVE")}
-                  className="rounded-lg bg-brand px-3 py-1.5 text-sm text-white hover:bg-brand-dark"
+                  className="rounded-lg bg-brand px-3 py-1.5 text-sm text-white hover:bg-brand-dark disabled:opacity-60"
                 >
                   تأیید
                 </button>
                 <button
+                  disabled={updatingId === listing.id}
                   onClick={() => decide(listing.id, "REJECTED")}
-                  className="rounded-lg border border-rose-300 px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-50"
+                  className="rounded-lg border border-rose-300 px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-50 disabled:opacity-60"
                 >
                   رد
                 </button>

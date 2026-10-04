@@ -70,6 +70,18 @@ export interface ShippingEstimate {
   estimatedCost: number;
 }
 
+export interface Match {
+  id: string;
+  listingId: string;
+  requestId: string;
+  matchScore: number;
+  reason?: string | null;
+  status: "SUGGESTED" | "ACCEPTED" | "REJECTED";
+  listing: Listing;
+  request: MaterialRequest;
+  shippingEstimate?: ShippingEstimate | null;
+}
+
 // ---------- کوپایلوت تأمین (Procurement Copilot) ----------
 
 export interface Supplier {
@@ -197,13 +209,14 @@ export const api = {
 
   // projects
   getMyProjects: () => request<Project[]>("/projects", { auth: true }),
+  getProject: (id: string) => request<Project>(`/projects/${id}`, { auth: true }),
   createProject: (input: { name: string; city: string; region?: string; address?: string; lat?: number; lng?: number }) =>
     request<Project>("/projects", { method: "POST", body: JSON.stringify(input), auth: true }),
 
   // listings
   getListings: (filters?: { categoryId?: string; city?: string; projectId?: string; minPrice?: number; maxPrice?: number }) =>
     request<Listing[]>(`/listings${toQuery(filters ?? {})}`),
-  getListing: (id: string) => request<Listing>(`/listings/${id}`),
+  getListing: (id: string) => request<Listing>(`/listings/${id}`, { auth: true }),
   createListing: (input: {
     projectId: string;
     categoryId: string;
@@ -214,16 +227,22 @@ export const api = {
     askingPrice: number;
   }) => request<Listing>("/listings", { method: "POST", body: JSON.stringify(input), auth: true }),
   getPendingListings: () => request<Listing[]>("/listings/pending", { auth: true }),
-  setListingStatus: (id: string, status: "ACTIVE" | "REJECTED") =>
-    request<Listing>(`/listings/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }), auth: true }),
+  setListingStatus: (id: string, status: "ACTIVE" | "REJECTED", moderationReason?: string) =>
+    request<Listing>(`/listings/${id}/status`, { method: "PATCH", body: JSON.stringify({ status, moderationReason }), auth: true }),
   getPriceSuggestion: (listingId: string) => request<PriceSuggestion>(`/listings/${listingId}/price-suggestion`),
 
   // requests
-  getRequests: (filters?: { categoryId?: string; projectId?: string }) =>
+  getRequests: (filters?: { categoryId?: string; projectId?: string; city?: string }) =>
     request<MaterialRequest[]>(`/requests${toQuery(filters ?? {})}`),
-  getRequest: (id: string) => request<MaterialRequest>(`/requests/${id}`),
+  getRequest: (id: string) => request<MaterialRequest>(`/requests/${id}`, { auth: true }),
   createRequest: (input: { projectId: string; categoryId: string; quantity: number; budget?: number; deadline?: string }) =>
     request<MaterialRequest>("/requests", { method: "POST", body: JSON.stringify(input), auth: true }),
+
+  // matches
+  getMatches: (filters?: { requestId?: string; listingId?: string; status?: Match["status"] }) =>
+    request<Match[]>(`/matches${toQuery(filters ?? {})}`, { auth: true }),
+  acceptMatch: (id: string) => request<Match>(`/matches/${id}/accept`, { method: "POST", auth: true }),
+  rejectMatch: (id: string) => request<Match>(`/matches/${id}/reject`, { method: "POST", auth: true }),
 
   // shipping
   estimateShipping: (fromProjectId: string, toProjectId: string) =>

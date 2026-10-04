@@ -18,9 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/" className="text-lg font-bold text-brand-dark">
               متریاب
             </a>
-            <nav className="flex items-center gap-4 text-sm text-gray-600">
+            <nav aria-label="ناوبری اصلی" className="flex flex-wrap items-center justify-end gap-3 text-sm text-gray-600">
+              <a href="/projects">پروژه‌ها</a>
               <a href="/listings">آگهی‌های عرضه</a>
               <a href="/requests">درخواست‌های تقاضا</a>
+              <a href="/matches">تطابق‌ها</a>
               <a href="/procurement">کوپایلوت تأمین</a>
               <a href="/dashboard">داشبورد</a>
               <NotificationBell />

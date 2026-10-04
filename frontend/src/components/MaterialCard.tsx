@@ -13,8 +13,9 @@ export function MaterialCard({ listing }: { listing: Listing }) {
         )}
       </div>
       <div className="p-3">
-        <p className="text-sm text-gray-500">
-          {listing.quantity} {listing.unit}
+        <p className="font-semibold">{listing.category?.name ?? "مصالح"}</p>
+        <p className="mt-1 text-sm text-gray-500">
+          {listing.quantity} {listing.unit}{listing.project?.city ? ` · ${listing.project.city}` : ""}
         </p>
         <p className="mt-1 font-semibold">
           {listing.askingPrice.toLocaleString("fa-IR")} تومان

@@ -1,11 +1,14 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api, Project } from "@/lib/api";
 import { isLoggedIn } from "@/lib/auth";
 import { flattenCategories } from "@/lib/categories";
 
 export default function NewListingPage() {
+  const searchParams = useSearchParams();
+  const preferredProjectId = searchParams.get("projectId");
   const [projects, setProjects] = useState<Project[]>([]);
   const [categories, setCategories] = useState<{ id: string; label: string }[]>([]);
   const [projectId, setProjectId] = useState("");
@@ -28,11 +31,11 @@ export default function NewListingPage() {
       .then(([p, c]) => {
         setProjects(p);
         setCategories(flattenCategories(c));
-        if (p.length > 0) setProjectId(p[0].id);
+        if (p.length > 0) setProjectId(p.some((project) => project.id === preferredProjectId) ? preferredProjectId! : p[0].id);
       })
       .catch((err) => setError(err instanceof Error ? err.message : "خطا در بارگذاری اطلاعات"))
       .finally(() => setLoaded(true));
-  }, []);
+  }, [preferredProjectId]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -157,7 +160,7 @@ export default function NewListingPage() {
               className="w-full rounded-lg border border-gray-300 px-3 py-2"
             />
           </div>
-          {error && <p className="text-sm text-rose-600">{error}</p>}
+          {error && <p role="alert" className="text-sm text-rose-600">{error}</p>}
           <button
             type="submit"
             disabled={loading}
