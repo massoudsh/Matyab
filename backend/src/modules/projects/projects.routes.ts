@@ -22,10 +22,9 @@ projectsRouter.post("/", requireAuth, async (req: AuthenticatedRequest, res, nex
   }
 });
 
-projectsRouter.get("/:id", requireAuth, async (req, res, next) => {
+projectsRouter.get("/:id", requireAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
-    const project = await getProjectById(req.params.id);
-    if (!project) return res.status(404).json({ error: "پروژه یافت نشد" });
+    const project = await getProjectById(req.params.id, req.userId!, req.userRole);
     res.json(project);
   } catch (err) {
     next(err);

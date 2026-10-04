@@ -1,4 +1,6 @@
 import { prisma } from "../../db/prisma";
+import { badRequest, forbidden, notFound } from "../../middlewares/http-error";
+import { assertProjectOwner } from "../projects/projects.service";
 
 interface ListingFilters {
   categoryId?: string;
@@ -34,15 +36,31 @@ export async function findPendingListings() {
   });
 }
 
-export async function updateListingStatus(id: string, status: "ACTIVE" | "REJECTED") {
-  return prisma.listing.update({ where: { id }, data: { status } });
+export async function updateListingStatus(
+  id: string,
+  status: "ACTIVE" | "REJECTED",
+  moderationReason?: string
+) {
+  const listing = await prisma.listing.findUnique({ where: { id } });
+  if (!listing) throw notFound("آگهی");
+  if (listing.status !== "PENDING_REVIEW") {
+    throw badRequest("فقط آگهی در انتظار بررسی قابل تأیید یا رد است");
+  }
+
+  return prisma.listing.update({
+    where: { id },
+    data: { status, moderationReason: moderationReason ?? null, moderatedAt: new Date() },
+  });
 }
 
-export async function getListingById(id: string) {
-  return prisma.listing.findUnique({
+export async function getListingById(id: string, userId: string, userRole?: string) {
+  const listing = await prisma.listing.findUnique({
     where: { id },
     include: { category: true, qualityAssessment: true, priceSuggestion: true, project: true },
   });
+  if (!listing) throw notFound("آگهی");
+  if (userRole !== "ADMIN" && listing.project.ownerId !== userId) throw forbidden();
+  return listing;
 }
 
 interface CreateListingInput {
@@ -55,7 +73,7 @@ interface CreateListingInput {
   askingPrice: number;
 }
 
-export async function createListing(input: CreateListingInput) {
-  // TODO(ISSUE-502): بعد از ساخت آگهی، الگوریتم مچینگ باید trigger شود.
+export async function createListing(input: CreateListingInput, userId: string, userRole?: string) {
+  await assertProjectOwner(input.projectId, userId, userRole);
   return prisma.listing.create({ data: { ...input, status: "PENDING_REVIEW" } });
 }

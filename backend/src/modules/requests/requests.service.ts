@@ -1,4 +1,6 @@
 import { prisma } from "../../db/prisma";
+import { forbidden, notFound } from "../../middlewares/http-error";
+import { assertProjectOwner } from "../projects/projects.service";
 import { generateMatchesForRequest } from "../matching/matching.service";
 
 interface CreateRequestInput {
@@ -9,7 +11,8 @@ interface CreateRequestInput {
   deadline?: Date;
 }
 
-export async function createRequest(input: CreateRequestInput) {
+export async function createRequest(input: CreateRequestInput, userId: string, userRole?: string) {
+  await assertProjectOwner(input.projectId, userId, userRole);
   const request = await prisma.materialRequest.create({ data: { ...input, status: "ACTIVE" } });
 
   // ISSUE-502: مچینگ بلافاصله بعد از ثبت درخواست trigger می‌شود (نه cron).
@@ -29,9 +32,12 @@ export async function findRequests(categoryId?: string, projectId?: string) {
   });
 }
 
-export async function getRequestById(id: string) {
-  return prisma.materialRequest.findUnique({
+export async function getRequestById(id: string, userId: string, userRole?: string) {
+  const request = await prisma.materialRequest.findUnique({
     where: { id },
     include: { category: true, project: true },
   });
+  if (!request) throw notFound("درخواست");
+  if (userRole !== "ADMIN" && request.project.ownerId !== userId) throw forbidden();
+  return request;
 }

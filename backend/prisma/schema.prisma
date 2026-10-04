@@ -130,8 +130,10 @@ model Listing {
   photos        String[]
   description   String?
   askingPrice   Float
-  status        ListingStatus @default(PENDING_REVIEW)
-  createdAt     DateTime      @default(now())
+  status           ListingStatus @default(PENDING_REVIEW)
+  moderationReason String?
+  moderatedAt      DateTime?
+  createdAt        DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
   qualityAssessment QualityAssessment?

@@ -1,16 +1,17 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Request } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
+import { forbidden, unauthorized } from "./http-error";
 
 export interface AuthenticatedRequest extends Request {
   userId?: string;
   userRole?: string;
 }
 
-export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+export function requireAuth(req: AuthenticatedRequest, _res: unknown, next: NextFunction) {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "توکن احراز هویت ارسال نشده است" });
+    return next(unauthorized());
   }
 
   const token = header.slice("Bearer ".length);
@@ -20,14 +21,14 @@ export function requireAuth(req: AuthenticatedRequest, res: Response, next: Next
     req.userRole = payload.role;
     next();
   } catch {
-    return res.status(401).json({ error: "توکن نامعتبر یا منقضی‌شده" });
+    return next(unauthorized());
   }
 }
 
 export function requireRole(...roles: string[]) {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return (req: AuthenticatedRequest, _res: unknown, next: NextFunction) => {
     if (!req.userRole || !roles.includes(req.userRole)) {
-      return res.status(403).json({ error: "دسترسی غیرمجاز" });
+      return next(forbidden());
     }
     next();
   };

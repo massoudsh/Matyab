@@ -52,6 +52,8 @@ CREATE TABLE listings (
     description   TEXT,
     asking_price  REAL NOT NULL,
     status        listing_status NOT NULL DEFAULT 'PENDING_REVIEW',
+    moderation_reason TEXT,
+    moderated_at   TIMESTAMPTZ,
     created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );

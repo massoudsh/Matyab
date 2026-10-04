@@ -1,7 +1,11 @@
 import { NextFunction, Request, Response } from "express";
+import { HttpError } from "./http-error";
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
+  if (err instanceof HttpError) {
+    return res.status(err.status).json({ error: err.message });
+  }
+
   console.error(err);
-  const message = err instanceof Error ? err.message : "خطای داخلی سرور";
-  res.status(500).json({ error: message });
+  res.status(500).json({ error: "خطای داخلی سرور" });
 }

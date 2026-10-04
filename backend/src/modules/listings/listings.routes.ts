@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requireAuth, requireRole } from "../../middlewares/auth.middleware";
+import { AuthenticatedRequest, requireAuth, requireRole } from "../../middlewares/auth.middleware";
 import {
   createListing,
   findListings,
@@ -37,30 +37,35 @@ listingsRouter.get("/pending", requireAuth, requireRole("ADMIN"), async (_req, r
 
 listingsRouter.patch("/:id/status", requireAuth, requireRole("ADMIN"), async (req, res, next) => {
   try {
-    const { status } = req.body as { status: "ACTIVE" | "REJECTED" };
+    const { status, moderationReason } = req.body as {
+      status: "ACTIVE" | "REJECTED";
+      moderationReason?: string;
+    };
     if (status !== "ACTIVE" && status !== "REJECTED") {
       return res.status(400).json({ error: "وضعیت نامعتبر است" });
     }
-    const listing = await updateListingStatus(req.params.id, status);
+    if (status === "REJECTED" && !moderationReason?.trim()) {
+      return res.status(400).json({ error: "دلیل رد آگهی الزامی است" });
+    }
+    const listing = await updateListingStatus(req.params.id, status, moderationReason?.trim());
     res.json(listing);
   } catch (err) {
     next(err);
   }
 });
 
-listingsRouter.get("/:id", async (req, res, next) => {
+listingsRouter.get("/:id", requireAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
-    const listing = await getListingById(req.params.id);
-    if (!listing) return res.status(404).json({ error: "آگهی یافت نشد" });
+    const listing = await getListingById(req.params.id, req.userId!, req.userRole);
     res.json(listing);
   } catch (err) {
     next(err);
   }
 });
 
-listingsRouter.post("/", requireAuth, async (req, res, next) => {
+listingsRouter.post("/", requireAuth, async (req: AuthenticatedRequest, res, next) => {
   try {
-    const listing = await createListing(req.body);
+    const listing = await createListing(req.body, req.userId!, req.userRole);
     res.status(201).json(listing);
   } catch (err) {
     next(err);
