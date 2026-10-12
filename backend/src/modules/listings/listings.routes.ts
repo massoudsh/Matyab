@@ -29,6 +29,15 @@ const listingUpdateSchema = listingInputSchema.pick({ quantity: true, unit: true
   "حداقل یک فیلد برای ویرایش لازم است"
 );
 
+const moderationSchema = z.object({
+  status: z.enum(["ACTIVE", "REJECTED"], { errorMap: () => ({ message: "وضعیت نامعتبر است" }) }),
+  moderationReason: z.string().trim().max(500, "دلیل رد حداکثر ۵۰۰ نویسه است").optional(),
+}).strict().superRefine((input, context) => {
+  if (input.status === "REJECTED" && !input.moderationReason) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["moderationReason"], message: "دلیل رد آگهی الزامی است" });
+  }
+});
+
 function validationError(result: z.SafeParseError<unknown>, res: { status: (code: number) => { json: (body: unknown) => unknown } }) {
   return res.status(400).json({ error: result.error.issues[0]?.message ?? "داده آگهی نامعتبر است" });
 }
@@ -62,18 +71,10 @@ listingsRouter.get("/pending", requireAuth, requireRole("ADMIN"), async (_req, r
 });
 
 listingsRouter.patch("/:id/status", requireAuth, requireRole("ADMIN"), async (req, res, next) => {
+  const input = moderationSchema.safeParse(req.body);
+  if (!input.success) return validationError(input, res);
   try {
-    const { status, moderationReason } = req.body as {
-      status: "ACTIVE" | "REJECTED";
-      moderationReason?: string;
-    };
-    if (status !== "ACTIVE" && status !== "REJECTED") {
-      return res.status(400).json({ error: "وضعیت نامعتبر است" });
-    }
-    if (status === "REJECTED" && !moderationReason?.trim()) {
-      return res.status(400).json({ error: "دلیل رد آگهی الزامی است" });
-    }
-    const listing = await updateListingStatus(req.params.id, status, moderationReason?.trim());
+    const listing = await updateListingStatus(req.params.id, input.data.status, input.data.moderationReason);
     res.json(listing);
   } catch (err) {
     next(err);
