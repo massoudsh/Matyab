@@ -9,6 +9,8 @@ interface ListingFilters {
   projectId?: string;
   minPrice?: number;
   maxPrice?: number;
+  q?: string;
+  sort?: "newest" | "price-asc" | "price-desc";
 }
 
 export async function findListings(filters: ListingFilters) {
@@ -21,10 +23,14 @@ export async function findListings(filters: ListingFilters) {
         gte: filters.minPrice,
         lte: filters.maxPrice,
       },
-      project: filters.city ? { city: filters.city } : undefined,
+      project: filters.city ? { city: { equals: filters.city, mode: "insensitive" } } : undefined,
+      OR: filters.q ? [
+        { description: { contains: filters.q, mode: "insensitive" } },
+        { category: { name: { contains: filters.q, mode: "insensitive" } } },
+      ] : undefined,
     },
-    include: { category: true, qualityAssessment: true, priceSuggestion: true },
-    orderBy: { createdAt: "desc" },
+    include: { category: true, qualityAssessment: true, priceSuggestion: true, project: { select: { city: true, region: true } } },
+    orderBy: filters.sort === "price-asc" ? { askingPrice: "asc" } : filters.sort === "price-desc" ? { askingPrice: "desc" } : { createdAt: "desc" },
   });
 }
 
@@ -66,17 +72,27 @@ export async function getListingById(id: string, userId: string, userRole?: stri
   return listing;
 }
 
+export async function getPublicListing(id: string) {
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    include: { category: true, qualityAssessment: true, priceSuggestion: true, project: { select: { city: true, region: true } } },
+  });
+  if (!listing || listing.status !== "ACTIVE") throw notFound("آگهی");
+  return listing;
+}
+
 interface CreateListingInput {
   projectId: string;
   categoryId: string;
   quantity: number;
   unit: string;
   photos: string[];
+  specifications?: Record<string, string>;
   description?: string;
   askingPrice: number;
 }
 
-type UpdateListingInput = Partial<Pick<CreateListingInput, "quantity" | "unit" | "photos" | "description" | "askingPrice">>;
+type UpdateListingInput = Partial<Pick<CreateListingInput, "quantity" | "unit" | "photos" | "description" | "askingPrice" | "specifications">>;
 
 export async function createListing(input: CreateListingInput, userId: string, userRole?: string) {
   await assertProjectOwner(input.projectId, userId, userRole);

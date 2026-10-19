@@ -128,6 +128,7 @@ model Listing {
   quantity      Float
   unit          String
   photos        String[]
+  specifications Json @default("{}")
   description   String?
   askingPrice   Float
   status           ListingStatus @default(PENDING_REVIEW)
