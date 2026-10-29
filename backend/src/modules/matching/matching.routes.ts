@@ -1,5 +1,7 @@
 import { Router } from "express";
+import { z } from "zod";
 import { AuthenticatedRequest, requireAuth } from "../../middlewares/auth.middleware";
+import { createMessage, findMessages } from "./messages.service";
 import { findMatchesForUser, updateMatchStatus } from "./matching.service";
 
 export const matchingRouter = Router();
@@ -16,6 +18,24 @@ matchingRouter.get("/", requireAuth, async (req: AuthenticatedRequest, res, next
       status: status as "SUGGESTED" | "ACCEPTED" | "REJECTED" | undefined,
     });
     res.json(matches);
+  } catch (err) {
+    next(err);
+  }
+});
+
+matchingRouter.get("/:id/messages", requireAuth, async (req: AuthenticatedRequest, res, next) => {
+  try {
+    res.json(await findMessages(req.params.id, req.userId!));
+  } catch (err) {
+    next(err);
+  }
+});
+
+matchingRouter.post("/:id/messages", requireAuth, async (req: AuthenticatedRequest, res, next) => {
+  const input = z.object({ body: z.string().trim().min(1, "متن پیام الزامی است").max(2000, "متن پیام حداکثر ۲۰۰۰ نویسه است") }).strict().safeParse(req.body);
+  if (!input.success) return res.status(400).json({ error: input.error.issues[0]?.message ?? "پیام نامعتبر است" });
+  try {
+    res.status(201).json(await createMessage(req.params.id, req.userId!, input.data.body));
   } catch (err) {
     next(err);
   }

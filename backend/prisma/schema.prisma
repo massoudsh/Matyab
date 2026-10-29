@@ -80,6 +80,8 @@ model User {
 
   projects      Project[]
   notifications Notification[]
+  sentMessages  Message[] @relation("MessageSender")
+  receivedMessages Message[] @relation("MessageReceiver")
 
   @@map("users")
 }
@@ -200,6 +202,7 @@ model Match {
 
   shippingEstimate ShippingEstimate?
   transaction      Transaction?
+  messages         Message[]
 
   @@unique([listingId, requestId])
   @@map("matches")
@@ -239,6 +242,21 @@ model Review {
   createdAt     DateTime    @default(now())
 
   @@map("reviews")
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  matchId    String
+  match      Match    @relation(fields: [matchId], references: [id])
+  senderId   String
+  sender     User     @relation("MessageSender", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User     @relation("MessageReceiver", fields: [receiverId], references: [id])
+  body       String
+  createdAt  DateTime @default(now())
+
+  @@index([matchId, createdAt])
+  @@map("messages")
 }
 
 model PriceHistory {

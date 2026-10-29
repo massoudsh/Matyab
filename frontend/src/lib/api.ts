@@ -82,6 +82,16 @@ export interface Match {
   shippingEstimate?: ShippingEstimate | null;
 }
 
+export interface Message {
+  id: string;
+  matchId: string;
+  senderId: string;
+  receiverId: string;
+  body: string;
+  createdAt: string;
+  sender: { id: string; fullName: string };
+}
+
 // ---------- کوپایلوت تأمین (Procurement Copilot) ----------
 
 export interface Supplier {
@@ -243,6 +253,9 @@ export const api = {
     request<Match[]>(`/matches${toQuery(filters ?? {})}`, { auth: true }),
   acceptMatch: (id: string) => request<Match>(`/matches/${id}/accept`, { method: "POST", auth: true }),
   rejectMatch: (id: string) => request<Match>(`/matches/${id}/reject`, { method: "POST", auth: true }),
+
+  getMessages: (matchId: string) => request<Message[]>(`/matches/${matchId}/messages`, { auth: true }),
+  sendMessage: (matchId: string, body: string) => request<Message>(`/matches/${matchId}/messages`, { method: "POST", body: JSON.stringify({ body }), auth: true }),
 
   // shipping
   estimateShipping: (fromProjectId: string, toProjectId: string) =>

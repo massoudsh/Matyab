@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api, Match } from "@/lib/api";
 import { isLoggedIn } from "@/lib/auth";
 import { MatchExplanationCard } from "@/components/MatchExplanationCard";
+import { MessageThread } from "@/components/MessageThread";
 
 export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -58,6 +59,7 @@ export default function MatchesPage() {
               <button disabled={updatingId === match.id} onClick={() => updateStatus(match, "accept")} className="rounded-lg bg-brand px-3 py-2 text-sm text-white disabled:opacity-60">تأیید</button>
               <button disabled={updatingId === match.id} onClick={() => updateStatus(match, "reject")} className="rounded-lg border border-gray-300 px-3 py-2 text-sm disabled:opacity-60">رد</button>
             </div>}
+            {match.status === "ACCEPTED" && <MessageThread matchId={match.id} />}
           </article>)}
         </div>
       )}
